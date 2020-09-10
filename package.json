@@ -1,0 +1,19 @@
+{
+  "name": "autocomplete-library",
+  "version": "1.0.0",
+  "browser": "dist/autocomplete.js",
+  "targets": {
+    "browser": {
+      "outputFormat": "global",
+      "includeNodeModules": true
+    }
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.4.4",
+    "eslint": "^7.8.1",
+    "standart": "^6.1.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.11.6"
+  }
+}
