@@ -1,0 +1,11 @@
+[1.0.1](2020.09.16)(compatible)
+--Additions--
+None
+
+-- Changes --
+1) Fixed highlighting behaviour. It now
+works in case insensitive mode and properly
+marks escape sequences.
+
+--Deletions--
+None

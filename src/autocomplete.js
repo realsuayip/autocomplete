@@ -11,14 +11,11 @@ const entityMap = {
     "<": "&lt;",
     ">": "&gt;",
     '"': "&quot;",
-    "'": "&#39;",
-    "/": "&#x2F;",
-    "`": "&#x60;",
-    "=": "&#x3D;"
+    "'": "&#39;"
 }
 
 function notSafe (string) {
-    return String(string).replace(/[&<>"'`=/]/g, function (s) {
+    return string.replace(/[&<>"']/g, function (s) {
         return entityMap[s]
     })
 }
@@ -30,8 +27,27 @@ function template (html) {
     return template.content.firstChild
 }
 
-function replaceAll (str, pattern, replacement) {
-    return str.replace(new RegExp(pattern.replace(/[.*+\-?^${}()|[\]\\]/g, "\\$&"), "g"), replacement)
+function escapeRegExChars (value) {
+    return value.replace(/[|\\{}()[\]^$+*?.]/g, "\\$&")
+}
+
+function formatResult (suggestion, value) {
+    /**
+     *  formatResult function source:
+     *  Ajax Autocomplete for jQuery, version 1.4.11
+     *  (c) 2017 Tomas Kirda
+     *  https://github.com/devbridge/jQuery-Autocomplete
+     *  MIT
+     */
+
+    if (!value) {
+        return notSafe(suggestion)
+    }
+
+    const pattern = "(" + escapeRegExChars(value) + ")"
+
+    return notSafe(suggestion.replace(new RegExp(pattern, "gi"), "<mark>$1</mark>"))
+        .replace(/&lt;(\/?mark)&gt;/g, "<$1>")
 }
 
 class AutoComplete {
@@ -151,7 +167,7 @@ class AutoComplete {
             }
 
             const items = suggestions.map(s => ({
-                name: this.highlight ? replaceAll(notSafe(s.name), name, `<mark>${notSafe(name)}</mark>`) : notSafe(s.name),
+                name: this.highlight ? formatResult(s.name, name) : notSafe(s.name),
                 value: notSafe(s.value)
             }))
 
