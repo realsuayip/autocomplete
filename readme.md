@@ -25,6 +25,9 @@ example implementation can be found in the [example](example) folder.
  `noResultsMessage`\
  The message to be shown when there are no results found.
  
+`cache`\
+Set this option to true to enable caching.
+ 
  #### Styling
  Result list container takes 100% width of the parent element, thus the parent
  element needs to be relatively positioned with a certain width.

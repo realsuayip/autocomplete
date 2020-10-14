@@ -58,6 +58,10 @@ class AutoComplete {
         this.silent = options.silent === true // Set this to true to disable no suggestions notice.
         this.highlight = options.highlight // Set this true to enable highlighting
         this.noResultsMessage = options.noResultsMessage || "-- no corresponding results --"
+        this.cache = options.cache === true // Set this true to enable caching
+
+        this.cachedResults = []
+        this.emptyResults = []
 
         this.popper = null
         this.selected = null
@@ -161,36 +165,61 @@ class AutoComplete {
     }
 
     suggest (name) {
-        this.lookup(name).then(suggestions => {
-            if (!this.popper) {
-                this.popper = this.create()
+        if (this.cache) {
+            const isEmptyResult = this.emptyResults.filter(result => name.startsWith(Object.keys(result)[0])).length
+
+            if (isEmptyResult) {
+                this.render([])
+                return
             }
 
+            const [items] = this.cachedResults.filter(result => result[name])
+
+            if (items) {
+                this.render(items[name])
+                return
+            }
+        }
+
+        this.lookup(name).then(suggestions => {
             const items = suggestions.map(s => ({
                 name: this.highlight ? formatResult(s.name, name) : notSafe(s.name),
                 value: notSafe(s.value)
             }))
 
-            if (items.length) {
-                this.template.innerHTML = ""
-                for (const [index, item] of items.entries()) {
-                    this.template.innerHTML += `<li role="option" data-value="${item.value}" id="cb-opt-${index}">${item.name}</li>`
-                }
-            } else {
-                if (this.silent) {
-                    this.destroy()
-                    return
-                }
-
-                if (!this.template.querySelector(".no-results")) {
-                    this.template.innerHTML = `<li role="alert" aria-live="assertive" class='no-results'>${this.noResultsMessage}</li>`
-                }
+            if (this.cache) {
+                const resultSet = items.length ? this.cachedResults : this.emptyResults
+                resultSet.push({ [name]: items })
             }
 
-            this.showing = true
-            this.template.style.display = "block"
-            this.input.setAttribute("aria-expanded", "true")
+            this.render(items)
         })
+    }
+
+    render (items) {
+        if (!this.popper) {
+            this.popper = this.create()
+        }
+
+        if (items.length) {
+            this.template.innerHTML = ""
+            for (const [index, item] of items.entries()) {
+                this.template.innerHTML += `<li role="option" data-value="${item.value}" id="cb-opt-${index}">${item.name}</li>`
+            }
+        } else {
+            if (this.silent) {
+                this.destroy()
+                return
+            }
+
+            if (!this.template.querySelector(".no-results")) {
+                this.template.innerHTML = `<li role="alert" aria-live="assertive" class='no-results'>${this.noResultsMessage}</li>`
+            }
+        }
+
+        this.showing = true
+        this.template.style.display = "block"
+        this.input.setAttribute("aria-expanded", "true")
     }
 
     destroy () {
